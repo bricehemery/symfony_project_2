@@ -203,7 +203,7 @@ class __TwigTemplate_88ad9f60cbdd04d189884f77065becb79f510dcab590a04bcf9dc6aaedc
                 <span class=\"value\">";
             // line 55
             echo twig_escape_filter($this->env, sprintf("%.2f", ((twig_get_attribute($this->env, $this->source, twig_get_attribute($this->env, $this->source, twig_get_attribute($this->env, $this->source, (isset($context["profile"]) || array_key_exists("profile", $context) ? $context["profile"] : (function () { throw new RuntimeError('Variable "profile" does not exist.', 55, $this->source); })()), "collectors", [], "any", false, false, false, 55), "memory", [], "any", false, false, false, 55), "memory", [], "any", false, false, false, 55) / 1024) / 1024)), "html", null, true);
-            echo " <span class=\"unit\">MB</span></span>
+            echo " <span class=\"unit\">MiB</span></span>
                 <span class=\"label\">Peak memory usage</span>
             </div>
         ";
@@ -459,7 +459,7 @@ class __TwigTemplate_88ad9f60cbdd04d189884f77065becb79f510dcab590a04bcf9dc6aaedc
             $__internal_319393461309892924ff6e74d6d6e64287df64b63545b994e100d4ab223aed02->enter($__internal_319393461309892924ff6e74d6d6e64287df64b63545b994e100d4ab223aed02_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "macro", "dump_request_data"));
 
             // line 156
-            $macros["__internal_dfda0e6cd2ed7ba9a4028827c6f3d7f27cd8c87823f365f8c36b34108aa27eac"] = $this;
+            $macros["__internal_4d48ddacc547a960bb07e5b99971ae86befb590b701f3d9ba53190a3e4a67f83"] = $this;
             // line 157
             echo "{
     id: \"";
@@ -476,7 +476,7 @@ class __TwigTemplate_88ad9f60cbdd04d189884f77065becb79f510dcab590a04bcf9dc6aaedc
             echo "\",
     events: [ ";
             // line 161
-            echo twig_call_macro($macros["__internal_dfda0e6cd2ed7ba9a4028827c6f3d7f27cd8c87823f365f8c36b34108aa27eac"], "macro_dump_events", [(isset($context["events"]) || array_key_exists("events", $context) ? $context["events"] : (function () { throw new RuntimeError('Variable "events" does not exist.', 161, $this->source); })())], 161, $context, $this->getSourceContext());
+            echo twig_call_macro($macros["__internal_4d48ddacc547a960bb07e5b99971ae86befb590b701f3d9ba53190a3e4a67f83"], "macro_dump_events", [(isset($context["events"]) || array_key_exists("events", $context) ? $context["events"] : (function () { throw new RuntimeError('Variable "events" does not exist.', 161, $this->source); })())], 161, $context, $this->getSourceContext());
             echo " ],
 }
 ";
@@ -740,7 +740,7 @@ class __TwigTemplate_88ad9f60cbdd04d189884f77065becb79f510dcab590a04bcf9dc6aaedc
 
         {% if profile.collectors.memory %}
             <div class=\"metric\">
-                <span class=\"value\">{{ '%.2f'|format(profile.collectors.memory.memory / 1024 / 1024) }} <span class=\"unit\">MB</span></span>
+                <span class=\"value\">{{ '%.2f'|format(profile.collectors.memory.memory / 1024 / 1024) }} <span class=\"unit\">MiB</span></span>
                 <span class=\"label\">Peak memory usage</span>
             </div>
         {% endif %}

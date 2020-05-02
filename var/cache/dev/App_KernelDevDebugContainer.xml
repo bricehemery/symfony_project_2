@@ -179,7 +179,7 @@
     <parameter key="doctrine.orm.cache.xcache.class">Doctrine\Common\Cache\XcacheCache</parameter>
     <parameter key="doctrine.orm.cache.wincache.class">Doctrine\Common\Cache\WinCacheCache</parameter>
     <parameter key="doctrine.orm.cache.zenddata.class">Doctrine\Common\Cache\ZendDataCache</parameter>
-    <parameter key="doctrine.orm.metadata.driver_chain.class">Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain</parameter>
+    <parameter key="doctrine.orm.metadata.driver_chain.class">Doctrine\Persistence\Mapping\Driver\MappingDriverChain</parameter>
     <parameter key="doctrine.orm.metadata.annotation.class">Doctrine\ORM\Mapping\Driver\AnnotationDriver</parameter>
     <parameter key="doctrine.orm.metadata.xml.class">Doctrine\ORM\Mapping\Driver\SimplifiedXmlDriver</parameter>
     <parameter key="doctrine.orm.metadata.yml.class">Doctrine\ORM\Mapping\Driver\SimplifiedYamlDriver</parameter>
@@ -330,6 +330,7 @@
     </service>
     <service id="App\DataFixtures\ArticleFixtures" class="App\DataFixtures\ArticleFixtures" autowire="true" autoconfigure="true">
       <tag name="doctrine.fixture.orm"/>
+      <argument type="service" id="security.user_password_encoder.generic"/>
     </service>
     <service id="App\Form\ArticleType" class="App\Form\ArticleType" autowire="true" autoconfigure="true">
       <tag name="form.type"/>
@@ -349,6 +350,10 @@
       <argument type="service" id="doctrine"/>
     </service>
     <service id="App\Repository\CommentRepository" class="App\Repository\CommentRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Repository\PostLikeRepository" class="App\Repository\PostLikeRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
@@ -1013,8 +1018,6 @@
     </service>
     <service id="session" class="Symfony\Component\HttpFoundation\Session\Session" public="true">
       <argument type="service" id="session.storage.native"/>
-      <argument type="service" id="session.attribute_bag"/>
-      <argument type="service" id="session.flash_bag"/>
     </service>
     <service id="session.storage.metadata_bag" class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag" public="false">
       <argument>_sf2_meta</argument>
@@ -1029,8 +1032,13 @@
       <argument>null</argument>
       <argument type="service" id="session.storage.metadata_bag"/>
     </service>
-    <service id="session.flash_bag" class="Symfony\Component\HttpFoundation\Session\Flash\FlashBag" public="false"/>
-    <service id="session.attribute_bag" class="Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag" public="false"/>
+    <service id="session.flash_bag" class="Symfony\Component\HttpFoundation\Session\Flash\FlashBag" public="false">
+      <factory service="session" method="getFlashBag"/>
+    </service>
+    <service id="session.attribute_bag" class="Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag" public="false">
+      <argument>attributes</argument>
+      <factory service="session" method="getBag"/>
+    </service>
     <service id="session.storage.mock_file" class="Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorage" public="false">
       <argument>C:\UwAmp\RapTruths\var\cache\dev/sessions</argument>
       <argument>MOCKSESSID</argument>
@@ -3451,12 +3459,12 @@
         <argument>server:log</argument>
       </call>
     </service>
-    <service id="sensio_framework_extra.controller.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\ControllerListener" public="false">
+    <service id="sensio_framework_extra.controller.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\ControllerListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <argument type="service" id="annotations.cached_reader"/>
     </service>
-    <service id="sensio_framework_extra.converter.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\ParamConverterListener" public="false">
+    <service id="sensio_framework_extra.converter.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\ParamConverterListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <argument type="service" id="sensio_framework_extra.converter.manager"/>
@@ -3474,30 +3482,30 @@
         <argument>datetime</argument>
       </call>
     </service>
-    <service id="sensio_framework_extra.converter.doctrine.orm" class="Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\DoctrineParamConverter" public="false">
+    <service id="sensio_framework_extra.converter.doctrine.orm" class="Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\DoctrineParamConverter">
       <tag name="request.param_converter" converter="doctrine.orm"/>
       <argument type="service" id="doctrine" on-invalid="ignore"/>
       <argument type="service" id="sensio_framework_extra.converter.doctrine.orm.expression_language.default" on-invalid="null"/>
     </service>
-    <service id="framework_extra_bundle.date_time_param_converter" class="Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\DateTimeParamConverter" public="false">
+    <service id="framework_extra_bundle.date_time_param_converter" class="Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\DateTimeParamConverter">
       <tag name="request.param_converter" converter="datetime"/>
     </service>
-    <service id="sensio_framework_extra.converter.doctrine.orm.expression_language.default" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage" public="false"/>
-    <service id="sensio_framework_extra.view.guesser" class="Sensio\Bundle\FrameworkExtraBundle\Templating\TemplateGuesser" public="false">
+    <service id="sensio_framework_extra.converter.doctrine.orm.expression_language.default" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage"/>
+    <service id="sensio_framework_extra.view.guesser" class="Sensio\Bundle\FrameworkExtraBundle\Templating\TemplateGuesser">
       <argument type="service" id="kernel"/>
     </service>
-    <service id="sensio_framework_extra.view.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\TemplateListener" public="false">
+    <service id="sensio_framework_extra.view.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\TemplateListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <argument type="service" id="sensio_framework_extra.view.guesser"/>
       <argument type="service" id="twig" on-invalid="null"/>
     </service>
-    <service id="sensio_framework_extra.cache.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\HttpCacheListener" public="false">
+    <service id="sensio_framework_extra.cache.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\HttpCacheListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <tag name="container.hot_path"/>
     </service>
-    <service id="sensio_framework_extra.security.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\SecurityListener" public="false">
+    <service id="sensio_framework_extra.security.listener" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\SecurityListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <argument type="service" id="framework_extra_bundle.argument_name_convertor"/>
@@ -3508,14 +3516,14 @@
       <argument type="service" id="security.authorization_checker" on-invalid="null"/>
       <argument type="service" id="monolog.logger" on-invalid="null"/>
     </service>
-    <service id="sensio_framework_extra.security.expression_language.default" class="Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage" public="false"/>
-    <service id="framework_extra_bundle.event.is_granted" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\IsGrantedListener" public="false">
+    <service id="sensio_framework_extra.security.expression_language.default" class="Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage"/>
+    <service id="framework_extra_bundle.event.is_granted" class="Sensio\Bundle\FrameworkExtraBundle\EventListener\IsGrantedListener">
       <tag name="kernel.event_subscriber"/>
       <tag name="container.hot_path"/>
       <argument type="service" id="framework_extra_bundle.argument_name_convertor"/>
       <argument type="service" id="security.authorization_checker" on-invalid="null"/>
     </service>
-    <service id="framework_extra_bundle.argument_name_convertor" class="Sensio\Bundle\FrameworkExtraBundle\Request\ArgumentNameConverter" public="false">
+    <service id="framework_extra_bundle.argument_name_convertor" class="Sensio\Bundle\FrameworkExtraBundle\Request\ArgumentNameConverter">
       <argument type="service" id="argument_metadata_factory"/>
     </service>
     <service id="doctrine.dbal.logger.chain" class="Doctrine\DBAL\Logging\LoggerChain" public="false" abstract="true">
@@ -3649,7 +3657,7 @@
       <factory class="Doctrine\ORM\EntityManager" method="create"/>
     </service>
     <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory" public="false">
-      <argument type="service" id=".service_locator.ldNE1Qh"/>
+      <argument type="service" id=".service_locator.biZaXRG"/>
     </service>
     <service id="doctrine.orm.manager_configurator.abstract" class="Doctrine\Bundle\DoctrineBundle\ManagerConfigurator" abstract="true">
       <argument type="collection"/>
@@ -3819,27 +3827,27 @@
         <argument>C:\UwAmp\RapTruths\src\Entity</argument>
       </argument>
     </service>
-    <service id="doctrine.orm.default_metadata_driver" class="Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain" public="false">
+    <service id="doctrine.orm.default_metadata_driver" class="Doctrine\Persistence\Mapping\Driver\MappingDriverChain" public="false">
       <call method="addDriver">
         <argument type="service" id="doctrine.orm.default_annotation_metadata_driver"/>
         <argument>App\Entity</argument>
       </call>
     </service>
-    <service id="cache.doctrine.orm.default.metadata" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="true">
+    <service id="cache.doctrine.orm.default.metadata" class="Symfony\Component\Cache\Adapter\TraceableAdapter">
       <tag name="cache.pool"/>
       <argument type="service" id="cache.doctrine.orm.default.metadata.recorder_inner"/>
     </service>
     <service id="doctrine.orm.cache.provider.cache.doctrine.orm.default.metadata" class="Symfony\Component\Cache\DoctrineProvider">
       <argument type="service" id="cache.doctrine.orm.default.metadata"/>
     </service>
-    <service id="cache.doctrine.orm.default.result" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="true">
+    <service id="cache.doctrine.orm.default.result" class="Symfony\Component\Cache\Adapter\TraceableAdapter">
       <tag name="cache.pool"/>
       <argument type="service" id="cache.doctrine.orm.default.result.recorder_inner"/>
     </service>
     <service id="doctrine.orm.cache.provider.cache.doctrine.orm.default.result" class="Symfony\Component\Cache\DoctrineProvider">
       <argument type="service" id="cache.doctrine.orm.default.result"/>
     </service>
-    <service id="cache.doctrine.orm.default.query" class="Symfony\Component\Cache\Adapter\TraceableAdapter" public="true">
+    <service id="cache.doctrine.orm.default.query" class="Symfony\Component\Cache\Adapter\TraceableAdapter">
       <tag name="cache.pool"/>
       <argument type="service" id="cache.doctrine.orm.default.query.recorder_inner"/>
     </service>
@@ -4608,6 +4616,10 @@
     </service>
     <service id="maker.entity_class_generator" class="Symfony\Bundle\MakerBundle\Doctrine\EntityClassGenerator" public="false">
       <argument type="service" id="maker.generator"/>
+      <argument type="service" id="maker.doctrine_helper"/>
+      <call method="setMangerRegistryClassName">
+        <argument>Doctrine\Persistence\ManagerRegistry</argument>
+      </call>
     </service>
     <service id="maker.user_class_builder" class="Symfony\Bundle\MakerBundle\Security\UserClassBuilder" public="false"/>
     <service id="maker.security_config_updater" class="Symfony\Bundle\MakerBundle\Security\SecurityConfigUpdater" public="false"/>
@@ -4639,6 +4651,7 @@
       <argument type="service" id="maker.doctrine_helper"/>
       <argument>C:\UwAmp\RapTruths</argument>
       <argument type="service" id="maker.generator"/>
+      <argument type="service" id="maker.entity_class_generator"/>
     </service>
     <service id="maker.maker.make_fixtures" class="Symfony\Bundle\MakerBundle\Maker\MakeFixtures" public="false">
       <tag name="maker.command"/>
@@ -4651,11 +4664,22 @@
     <service id="maker.maker.make_functional_test" class="Symfony\Bundle\MakerBundle\Maker\MakeFunctionalTest" public="false">
       <tag name="maker.command"/>
     </service>
+    <service id="maker.maker.make_message" class="Symfony\Bundle\MakerBundle\Maker\MakeMessage" public="false">
+      <tag name="maker.command"/>
+      <argument type="service" id="maker.file_manager"/>
+    </service>
+    <service id="maker.maker.make_messenger_middleware" class="Symfony\Bundle\MakerBundle\Maker\MakeMessengerMiddleware" public="false">
+      <tag name="maker.command"/>
+    </service>
     <service id="maker.maker.make_registration_form" class="Symfony\Bundle\MakerBundle\Maker\MakeRegistrationForm" public="false">
       <tag name="maker.command"/>
       <argument type="service" id="maker.file_manager"/>
       <argument type="service" id="maker.renderer.form_type_renderer"/>
       <argument type="service" id="router.default"/>
+    </service>
+    <service id="maker.maker.make_reset_password" class="Symfony\Bundle\MakerBundle\Maker\MakeResetPassword" public="false">
+      <tag name="maker.command"/>
+      <argument type="service" id="maker.file_manager"/>
     </service>
     <service id="maker.maker.make_serializer_encoder" class="Symfony\Bundle\MakerBundle\Maker\MakeSerializerEncoder" public="false">
       <tag name="maker.command"/>
@@ -4684,6 +4708,8 @@
       <argument type="service" id="maker.file_manager"/>
       <argument type="service" id="maker.user_class_builder"/>
       <argument type="service" id="maker.security_config_updater"/>
+      <argument type="service" id="maker.doctrine_helper"/>
+      <argument type="service" id="maker.entity_class_generator"/>
     </service>
     <service id="maker.maker.make_migration" class="Symfony\Bundle\MakerBundle\Maker\MakeMigration" public="false">
       <tag name="maker.command"/>
@@ -4734,6 +4760,8 @@
     <service id=".abstract.instanceof.App\Repository\CategoryRepository" class="App\Repository\CategoryRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\CommentRepository" class="App\Repository\CommentRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\CommentRepository" class="App\Repository\CommentRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\PostLikeRepository" class="App\Repository\PostLikeRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\PostLikeRepository" class="App\Repository\PostLikeRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\UserRepository" class="App\Repository\UserRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\UserRepository" class="App\Repository\UserRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".service_locator.CmORmuK" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
@@ -4829,6 +4857,24 @@
         <argument>make:functional-test</argument>
       </call>
     </service>
+    <service id="maker.auto_command.make_message" class="Symfony\Bundle\MakerBundle\Command\MakerCommand" public="false">
+      <tag name="console.command" command="make:message"/>
+      <argument type="service" id="maker.maker.make_message"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <call method="setName">
+        <argument>make:message</argument>
+      </call>
+    </service>
+    <service id="maker.auto_command.make_messenger_middleware" class="Symfony\Bundle\MakerBundle\Command\MakerCommand" public="false">
+      <tag name="console.command" command="make:messenger-middleware"/>
+      <argument type="service" id="maker.maker.make_messenger_middleware"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <call method="setName">
+        <argument>make:messenger-middleware</argument>
+      </call>
+    </service>
     <service id="maker.auto_command.make_registration_form" class="Symfony\Bundle\MakerBundle\Command\MakerCommand" public="false">
       <tag name="console.command" command="make:registration-form"/>
       <argument type="service" id="maker.maker.make_registration_form"/>
@@ -4836,6 +4882,15 @@
       <argument type="service" id="maker.generator"/>
       <call method="setName">
         <argument>make:registration-form</argument>
+      </call>
+    </service>
+    <service id="maker.auto_command.make_reset_password" class="Symfony\Bundle\MakerBundle\Command\MakerCommand" public="false">
+      <tag name="console.command" command="make:reset-password"/>
+      <argument type="service" id="maker.maker.make_reset_password"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <call method="setName">
+        <argument>make:reset-password</argument>
       </call>
     </service>
     <service id="maker.auto_command.make_serializer_encoder" class="Symfony\Bundle\MakerBundle\Command\MakerCommand" public="false">
@@ -4938,6 +4993,20 @@
         <argument key="manager" type="service" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
+    <service id=".service_locator.VPb8Zl0" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="user" type="service" id=".errored..service_locator.VPb8Zl0.App\Entity\User"/>
+      </argument>
+    </service>
+    <service id=".service_locator.Cb0bi62" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="article" type="service" id=".errored..service_locator.Cb0bi62.App\Entity\Articles"/>
+        <argument key="likeRepo" type="service" id="App\Repository\PostLikeRepository"/>
+        <argument key="manager" type="service" id="doctrine.orm.default_entity_manager"/>
+      </argument>
+    </service>
     <service id=".service_locator.874pdku" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -4945,13 +5014,21 @@
         <argument key="manager" type="service" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
-    <service id=".service_locator.ZjFyxbQ" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id=".service_locator.vS2I1fK" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\BlogController::form" type="service" id=".service_locator.Ru9NzNY"/>
         <argument key="App\Controller\BlogController::index" type="service" id=".service_locator.eRX0EVp"/>
+        <argument key="App\Controller\BlogController::isLikedByUser" type="service" id=".service_locator.VPb8Zl0"/>
+        <argument key="App\Controller\BlogController::like" type="service" id=".service_locator.Cb0bi62"/>
         <argument key="App\Controller\BlogController::show" type="service" id=".service_locator.1yyPHkS"/>
         <argument key="App\Controller\SecurityController::registration" type="service" id=".service_locator.874pdku"/>
+        <argument key="App\Controller\BlogController:form" type="service" id=".service_locator.Ru9NzNY"/>
+        <argument key="App\Controller\BlogController:index" type="service" id=".service_locator.eRX0EVp"/>
+        <argument key="App\Controller\BlogController:isLikedByUser" type="service" id=".service_locator.VPb8Zl0"/>
+        <argument key="App\Controller\BlogController:like" type="service" id=".service_locator.Cb0bi62"/>
+        <argument key="App\Controller\BlogController:show" type="service" id=".service_locator.1yyPHkS"/>
+        <argument key="App\Controller\SecurityController:registration" type="service" id=".service_locator.874pdku"/>
       </argument>
     </service>
     <service id=".service_locator.Y7gDuDN" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
@@ -5184,12 +5261,13 @@
         <argument key="doctrine.orm.default_listeners.attach_entity_listeners" type="service" id="doctrine.orm.default_listeners.attach_entity_listeners"/>
       </argument>
     </service>
-    <service id=".service_locator.ldNE1Qh" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id=".service_locator.biZaXRG" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Repository\ArticlesRepository" type="service" id="App\Repository\ArticlesRepository"/>
         <argument key="App\Repository\CategoryRepository" type="service" id="App\Repository\CategoryRepository"/>
         <argument key="App\Repository\CommentRepository" type="service" id="App\Repository\CommentRepository"/>
+        <argument key="App\Repository\PostLikeRepository" type="service" id="App\Repository\PostLikeRepository"/>
         <argument key="App\Repository\UserRepository" type="service" id="App\Repository\UserRepository"/>
       </argument>
     </service>
@@ -5392,12 +5470,12 @@
       <argument type="service" id="security.token_storage"/>
     </service>
     <service id="debug.argument_resolver.service.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver" public="false">
-      <argument type="service" id=".service_locator.ZjFyxbQ"/>
+      <argument type="service" id=".service_locator.vS2I1fK"/>
     </service>
     <service id="debug.argument_resolver.default.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver" public="false"/>
     <service id="debug.argument_resolver.variadic.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\VariadicValueResolver" public="false"/>
     <service id="debug.argument_resolver.not_tagged_controller.inner" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver" public="false">
-      <argument type="service" id=".service_locator.ZjFyxbQ"/>
+      <argument type="service" id=".service_locator.vS2I1fK"/>
     </service>
     <service id=".debug.http_client.inner" class="Symfony\Contracts\HttpClient\HttpClientInterface" public="false">
       <argument type="collection"/>
@@ -5408,8 +5486,10 @@
       <factory class="Symfony\Component\HttpClient\HttpClient" method="create"/>
     </service>
     <service id=".errored..service_locator.1yyPHkS.App\Entity\Articles" class="App\Entity\Articles"/>
+    <service id=".errored..service_locator.VPb8Zl0.App\Entity\User" class="App\Entity\User"/>
+    <service id=".errored..service_locator.Cb0bi62.App\Entity\Articles" class="App\Entity\Articles"/>
     <service id="console.command_loader" class="Symfony\Component\Console\CommandLoader\ContainerCommandLoader" public="true">
-      <argument type="service" id=".service_locator.cmKf87z"/>
+      <argument type="service" id=".service_locator.ubu8cSs"/>
       <argument type="collection">
         <argument key="about">console.command.about</argument>
         <argument key="assets:install">console.command.assets_install</argument>
@@ -5481,7 +5561,10 @@
         <argument key="make:fixtures">maker.auto_command.make_fixtures</argument>
         <argument key="make:form">maker.auto_command.make_form</argument>
         <argument key="make:functional-test">maker.auto_command.make_functional_test</argument>
+        <argument key="make:message">maker.auto_command.make_message</argument>
+        <argument key="make:messenger-middleware">maker.auto_command.make_messenger_middleware</argument>
         <argument key="make:registration-form">maker.auto_command.make_registration_form</argument>
+        <argument key="make:reset-password">maker.auto_command.make_reset_password</argument>
         <argument key="make:serializer:encoder">maker.auto_command.make_serializer_encoder</argument>
         <argument key="make:serializer:normalizer">maker.auto_command.make_serializer_normalizer</argument>
         <argument key="make:subscriber">maker.auto_command.make_subscriber</argument>
@@ -5493,7 +5576,7 @@
         <argument key="make:migration">maker.auto_command.make_migration</argument>
       </argument>
     </service>
-    <service id=".service_locator.cmKf87z" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id=".service_locator.ubu8cSs" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="console.command.about" type="service" id="console.command.about"/>
@@ -5561,8 +5644,11 @@
         <argument key="maker.auto_command.make_fixtures" type="service" id="maker.auto_command.make_fixtures"/>
         <argument key="maker.auto_command.make_form" type="service" id="maker.auto_command.make_form"/>
         <argument key="maker.auto_command.make_functional_test" type="service" id="maker.auto_command.make_functional_test"/>
+        <argument key="maker.auto_command.make_message" type="service" id="maker.auto_command.make_message"/>
+        <argument key="maker.auto_command.make_messenger_middleware" type="service" id="maker.auto_command.make_messenger_middleware"/>
         <argument key="maker.auto_command.make_migration" type="service" id="maker.auto_command.make_migration"/>
         <argument key="maker.auto_command.make_registration_form" type="service" id="maker.auto_command.make_registration_form"/>
+        <argument key="maker.auto_command.make_reset_password" type="service" id="maker.auto_command.make_reset_password"/>
         <argument key="maker.auto_command.make_serializer_encoder" type="service" id="maker.auto_command.make_serializer_encoder"/>
         <argument key="maker.auto_command.make_serializer_normalizer" type="service" id="maker.auto_command.make_serializer_normalizer"/>
         <argument key="maker.auto_command.make_subscriber" type="service" id="maker.auto_command.make_subscriber"/>
@@ -5770,7 +5856,7 @@
     <service id="Symfony\Component\Security\Core\User\UserCheckerInterface" alias="security.user_checker" public="false"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.CmORmuK" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem" public="false"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.ZjFyxbQ"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.vS2I1fK"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface $requestLogger" alias="monolog.logger.request"/>
     <service id="Psr\Log\LoggerInterface $consoleLogger" alias="monolog.logger.console"/>
